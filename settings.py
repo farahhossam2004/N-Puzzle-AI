@@ -3,7 +3,7 @@ White = (255, 255, 255)
 Black = (0,0,0)
 brown = (70,38,11)
 LightGrey = (100,100,100)
-BGColor = brown
+BGColor = Black
 
 # game settings
 width = 1110

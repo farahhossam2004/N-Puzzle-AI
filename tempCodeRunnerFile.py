@@ -1,1 +1,1 @@
-high_score.txt
+self.tiles_grid
