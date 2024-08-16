@@ -25,7 +25,7 @@ class Tile(pygame.sprite.Sprite):
             self.image.blit(font_surface, (draw_x, draw_y))
         else:
             self.image.fill(BGColor)
-            
+        
     
     
     def update(self):

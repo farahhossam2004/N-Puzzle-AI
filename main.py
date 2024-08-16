@@ -3,7 +3,8 @@ import random
 import time 
 from settings import *
 from sprite import * 
-
+from heioristic_Function import *
+import copy
 class Game:
     
     def __init__(self):
@@ -109,6 +110,7 @@ class Game:
         self.button_list = []
         self.button_list.append(Button(775, 100, 200, 50, "Shuffle", White, Black))
         self.button_list.append(Button(775, 170, 200, 50, "Reset", White, Black))
+        self.button_list.append(Button(400, 100, 250, 50, "1st Function",Red, White))
         self.draw_tiles()
         
         
@@ -146,7 +148,7 @@ class Game:
                 self.start_shuffle = False
                 self.start_game = True 
                 self.start_timer = True
-
+    
         self.all_sprites.update()
     
     def draw_grid(self):
@@ -202,6 +204,54 @@ class Game:
                             self.start_shuffle = True
                         if button.text == "Reset":
                             self.new()
+                        if button.text == "1st Function":
+                            if misplaced_tiles_function(self.tiles_grid, gameSize) != 0:
+                                new_list = self.tiles_grid
+                                for i, tiles in enumerate(self.tiles):
+                                    for j, tile in enumerate(tiles):
+                                        if self.tiles_grid[i][j] == 0:
+                                            
+                                            up, down, right, left = None, None, None, None
+                            
+                                            if tile.up()  :
+                                                new_list_up = copy.deepcopy(new_list)
+                                                new_list_up[i][j], new_list_up[i-1][j] = new_list_up[i-1][j], new_list_up[i][j]
+                                                up = misplaced_tiles_function(new_list_up, gameSize)
+
+                                            if tile.down() :
+                                                new_list_down = copy.deepcopy(new_list)
+                                                new_list_down[i][j], new_list_down[i+1][j] = new_list_down[i+1][j], new_list_down[i][j]
+                                                down = misplaced_tiles_function(new_list_down, gameSize)
+
+                                            if tile.left() :
+                                                new_list_left = copy.deepcopy(new_list)
+                                                new_list_left[i][j], new_list_left[i][j-1] = new_list_left[i][j-1], new_list_left[i][j]
+                                                left = misplaced_tiles_function(new_list_left, gameSize)
+
+                                            if tile.right() :
+                                                new_list_right = copy.deepcopy(new_list)
+                                                new_list_right[i][j], new_list_right[i][j+1] = new_list_right[i][j+1], new_list_right[i][j]
+                                                right = misplaced_tiles_function(new_list_right, gameSize)
+
+                                            if up is not None and (down is None or up < down) and (left is None or up < left) and (right is None or up < right):
+                                                self.tiles_grid = new_list_up
+                                            elif down is not None and (up is None or down < up) and (right is None or down < right) and (left is None or down < left):
+                                                self.tiles_grid = new_list_down
+                                            elif right is not None and (up is None or right < up) and (left is None or right < left) and (down is None or right < down):
+                                                self.tiles_grid = new_list_right
+                                            elif left is not None and (up is None or left < up) and (right is None or left < right) and (down is None or left < down):
+                                                self.tiles_grid = new_list_left
+                                            else :
+                                                print("Stuck")
+                                        self.draw_tiles()
+                                        self.update()
+                            else : 
+                                print("Aaaaaa")
+
+
+                            
+
+
     
 game = Game()
 while True:

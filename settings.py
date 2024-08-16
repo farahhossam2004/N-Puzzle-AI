@@ -3,6 +3,7 @@ White = (255, 255, 255)
 Black = (0,0,0)
 brown = (70,38,11)
 LightGrey = (100,100,100)
+Red = (228,28,28)
 BGColor = Black
 
 # game settings
