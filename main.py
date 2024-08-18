@@ -5,6 +5,7 @@ from settings import *
 from sprite import * 
 from heioristic_Function import *
 import copy
+import heapq
 class Game:
     
     def __init__(self):
@@ -18,6 +19,7 @@ class Game:
         self.start_game = False     # boolean to check if the game is running 
         self.start_timer = False
         self.elapsed_time = 0
+        self.start_solving = False
         self.high_score = float(self.get_high_score()[0])
         
     def get_high_score(self):
@@ -88,7 +90,7 @@ class Game:
 
 
 
-        
+    
     def draw_tiles(self):
         self.tiles = []
         for row , x in enumerate(self.tiles_grid):
@@ -108,9 +110,12 @@ class Game:
         self.start_timer = False
         self.start_game = False
         self.button_list = []
-        self.button_list.append(Button(775, 100, 200, 50, "Shuffle", White, Black))
-        self.button_list.append(Button(775, 170, 200, 50, "Reset", White, Black))
-        self.button_list.append(Button(400, 100, 250, 50, "1st Function",Red, White))
+        self.button_list.append(Button(775, 100, 250, 50, "Shuffle", cmawy, Black))
+        self.button_list.append(Button(775, 170, 250, 50, "Reset", cmawy, Black))
+        self.button_list.append(Button(775, 240, 250, 50, "1st Function",Red, White))
+        self.button_list.append(Button(775, 310, 250, 50, "2nd Function",Green, White))
+        self.button_list.append(Button(775, 380, 250, 50, "3rd Function",LightGrey, White))
+        self.button_list.append(Button(775, 450, 250, 50, "4th Function",brown, White))
         self.draw_tiles()
         
         
@@ -127,6 +132,7 @@ class Game:
     def update(self):
         
         if self.start_game:
+            
             if self.tiles_grid == self.tiles_grid_completed:
                 self.start_game = False
                 if self.high_score > 0:
@@ -144,11 +150,14 @@ class Game:
             self.shuffle()
             self.draw_tiles()
             self.shuffle_time += 1
-            if self.shuffle_time > 120:
+            if self.shuffle_time > 30:
                 self.start_shuffle = False
-                self.start_game = True 
-                self.start_timer = True
-    
+                
+        if self.start_solving:
+            self.start_game = True
+            self.start_timer = True
+            self.draw_tiles()
+        
         self.all_sprites.update()
     
     def draw_grid(self):
@@ -167,10 +176,78 @@ class Game:
             button.draw(self.screen)
         
         UIElement(825, 35, "%.3f" % self.elapsed_time).draw(self.screen)
-        UIElement(710, 380, "High Score = %.3f" %(self.high_score if self.high_score > 0 else 0)).draw(self.screen)
+        UIElement(710, 550, "High Score = %.3f" %(self.high_score if self.high_score > 0 else 0)).draw(self.screen)
         pygame.display.flip()
         
-        
+    
+
+
+    def Best_First_Search(self, func):
+        priority_Queue = []  # To be visited
+        Visited = set()  # Visited states
+        self.start_solving = True
+
+        # Push the initial state onto the priority queue
+        heapq.heappush(priority_Queue, (func(self.tiles_grid, gameSize), self.tiles_grid))
+
+        while priority_Queue:
+            current_priority, current_state = heapq.heappop(priority_Queue)
+
+            self.tiles_grid = current_state
+            pygame.display.flip()  # Ensure the display is updated
+            pygame.time.wait(0)  # Wait for 200 milliseconds (0.20 seconds)
+            self.update()
+            print(self.tiles_grid)
+
+            if current_state == self.tiles_grid_completed:
+                print("Completed")
+                self.start_solving = False
+                self.draw_tiles()
+                self.update()
+                return current_state
+
+            Visited.add(tuple(map(tuple, current_state)))
+
+            for neighbour in self.get_neighbours():
+                if tuple(map(tuple, neighbour)) not in Visited:
+                    heapq.heappush(priority_Queue, (func(neighbour, gameSize), neighbour))
+                    self.tiles_grid = neighbour  # Apply the move
+                    
+                    
+
+        print("No Solution")
+        return None
+    
+
+    def get_neighbours(self):
+        neighbours = []
+
+        for i, tiles in enumerate(self.tiles):
+            for j, tile in enumerate(tiles):
+                if self.tiles_grid[i][j] == 0:  # Found the empty tile
+                    if tile.up():
+                        up_list = copy.deepcopy(self.tiles_grid)
+                        up_list[i][j], up_list[i-1][j] = up_list[i-1][j], up_list[i][j]
+                        neighbours.append(up_list)
+                    if tile.down():
+                        down_list = copy.deepcopy(self.tiles_grid)
+                        down_list[i][j], down_list[i+1][j] = down_list[i+1][j], down_list[i][j]
+                        neighbours.append(down_list)
+                    if tile.right():
+                        right_list = copy.deepcopy(self.tiles_grid)
+                        right_list[i][j], right_list[i][j+1] = right_list[i][j+1], right_list[i][j]
+                        neighbours.append(right_list)
+                    if tile.left():
+                        left_list = copy.deepcopy(self.tiles_grid)
+                        left_list[i][j], left_list[i][j-1] = left_list[i][j-1], left_list[i][j]
+                        neighbours.append(left_list)
+                    
+        return neighbours
+
+
+
+
+
     def events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -205,55 +282,12 @@ class Game:
                         if button.text == "Reset":
                             self.new()
                         if button.text == "1st Function":
-                            if misplaced_tiles_function(self.tiles_grid, gameSize) != 0:
-                                new_list = self.tiles_grid
-                                for i, tiles in enumerate(self.tiles):
-                                    for j, tile in enumerate(tiles):
-                                        if self.tiles_grid[i][j] == 0:
-                                            
-                                            up, down, right, left = None, None, None, None
-                            
-                                            if tile.up()  :
-                                                new_list_up = copy.deepcopy(new_list)
-                                                new_list_up[i][j], new_list_up[i-1][j] = new_list_up[i-1][j], new_list_up[i][j]
-                                                up = misplaced_tiles_function(new_list_up, gameSize)
-
-                                            if tile.down() :
-                                                new_list_down = copy.deepcopy(new_list)
-                                                new_list_down[i][j], new_list_down[i+1][j] = new_list_down[i+1][j], new_list_down[i][j]
-                                                down = misplaced_tiles_function(new_list_down, gameSize)
-
-                                            if tile.left() :
-                                                new_list_left = copy.deepcopy(new_list)
-                                                new_list_left[i][j], new_list_left[i][j-1] = new_list_left[i][j-1], new_list_left[i][j]
-                                                left = misplaced_tiles_function(new_list_left, gameSize)
-
-                                            if tile.right() :
-                                                new_list_right = copy.deepcopy(new_list)
-                                                new_list_right[i][j], new_list_right[i][j+1] = new_list_right[i][j+1], new_list_right[i][j]
-                                                right = misplaced_tiles_function(new_list_right, gameSize)
-
-                                            if up is not None and (down is None or up < down) and (left is None or up < left) and (right is None or up < right):
-                                                self.tiles_grid = new_list_up
-                                            elif down is not None and (up is None or down < up) and (right is None or down < right) and (left is None or down < left):
-                                                self.tiles_grid = new_list_down
-                                            elif right is not None and (up is None or right < up) and (left is None or right < left) and (down is None or right < down):
-                                                self.tiles_grid = new_list_right
-                                            elif left is not None and (up is None or left < up) and (right is None or left < right) and (down is None or left < down):
-                                                self.tiles_grid = new_list_left
-                                            else :
-                                                print("Stuck")
-                                        self.draw_tiles()
-                                        self.update()
-                            else : 
-                                print("Aaaaaa")
+                            self.Best_First_Search(misplaced_tiles_function)
+                        if button.text == "2nd Function":
+                            self.Best_First_Search(distances)
 
 
-                            
-
-
-    
 game = Game()
 while True:
     game.new()
-    game.run()
+    game.run()  
