@@ -6,7 +6,10 @@ from sprite import *
 from heioristic_Function import *
 import copy
 import heapq
+import settings
 class Game:
+    
+    
     
     def __init__(self):
         pygame.init()
@@ -21,6 +24,7 @@ class Game:
         self.elapsed_time = 0
         self.start_solving = False
         self.high_score = float(self.get_high_score()[0])
+        
         
     def get_high_score(self):
         with open("high_score.txt", "r") as file:
@@ -116,6 +120,10 @@ class Game:
         self.button_list.append(Button(775, 310, 250, 50, "2nd Function",Green, White))
         self.button_list.append(Button(775, 380, 250, 50, "3rd Function",LightGrey, White))
         self.button_list.append(Button(775, 450, 250, 50, "4th Function",brown, White))
+        self.button_list.append(Button(630, 100,120, 50, "3 x 3",Green, White))
+        self.button_list.append(Button(630, 170, 120, 50, "4 x 4",LightGrey, White))
+        self.button_list.append(Button(630, 240, 120, 50, "5 x 5",brown, White))
+        
         self.draw_tiles()
         
         
@@ -285,6 +293,15 @@ class Game:
                             self.Best_First_Search(misplaced_tiles_function)
                         if button.text == "2nd Function":
                             self.Best_First_Search(distances)
+                        if button.text == "3 x 3" :
+                            settings.gameSize=3
+                        if button.text == "4 x 4" :
+                            settings.gameSize = 4
+                            self.new()
+                            print("4444")
+                        if button.text == "5 x 5" :
+                            settings.gameSize = 5 
+
 
 
 game = Game()
