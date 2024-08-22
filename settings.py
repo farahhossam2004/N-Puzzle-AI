@@ -14,4 +14,4 @@ height = 641
 FPS = 60
 title = "N - Puzzle "
 tileSize = 120
-gameSize = 5
+gameSize = 3

@@ -9,8 +9,6 @@ import heapq
 import settings
 class Game:
     
-    
-    
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((width, height))
@@ -23,17 +21,9 @@ class Game:
         self.start_timer = False
         self.elapsed_time = 0
         self.start_solving = False
-        self.high_score = float(self.get_high_score()[0])
         
         
-    def get_high_score(self):
-        with open("high_score.txt", "r") as file:
-            scores = file.read().splitlines()
-        return scores               #list
-    
-    def save_score(self):
-        with open("high_score.txt", "w") as file:
-            file.write(str("%.3f\n" % self.high_score))
+
 
     def create_game(self):
         grid = []
@@ -52,13 +42,13 @@ class Game:
         for row, tiles in enumerate(self.tiles):
             for col, tile in enumerate(tiles):
                 if tile.text == "empty":
-                    if tile.right():
+                    if tile.right() and col + 1 < settings.gameSize:
                         possible_moves.append("right")
-                    if tile.left():
+                    if tile.left() and col - 1 >= 0:
                         possible_moves.append("left")
-                    if tile.up():
+                    if tile.up() and row - 1 >= 0:
                         possible_moves.append("up")
-                    if tile.down():
+                    if tile.down() and row + 1 < settings.gameSize:
                         possible_moves.append("down")
                     break           # 3shan hya empty tile wahda f l loop t2f b2a 
             if len(possible_moves) > 0:
@@ -93,19 +83,24 @@ class Game:
 
 
 
-
-    
     def draw_tiles(self):
         self.tiles = []
-        for row , x in enumerate(self.tiles_grid):
+        for i, row in enumerate(self.tiles_grid):
             self.tiles.append([])
-            for col , tile in enumerate(x):
-                if tile!=0:
-                    self.tiles[row].append(Tile(self ,  col , row , str(tile)))
-                else :
-                    self.tiles[row].append(Tile(self ,  col , row , "empty"))
-                    
-                    
+            for j, col in enumerate(row):  # Iterate through columns correctly
+                tile_value = self.tiles_grid[i][j]  # Use i and j to access the correct tile value
+                # print(f"Drawing tile at ({i}, {j}) with value {tile_value}")
+                if tile_value != 0:
+                    self.tiles[i].append(Tile(self, j, i, str(tile_value)))  # Pass row as i, column as j
+                else:
+                    self.tiles[i].append(Tile(self, j, i, "empty"))
+        
+        # Debugging
+        # print("Tiles after draw_tiles:")
+        # for row in self.tiles:
+        #     print([tile.text for tile in row])
+
+
     def new(self):
         self.all_sprites = pygame.sprite.Group()
         self.tiles_grid = self.create_game()
@@ -143,16 +138,11 @@ class Game:
             
             if self.tiles_grid == self.tiles_grid_completed:
                 self.start_game = False
-                if self.high_score > 0:
-                    self.high_score = self.elapsed_time if self.elapsed_time < self.high_score else self.high_score
-                else:
-                    self.high_score = self.elapsed_time
-                self.save_score()
             
-            if self.start_timer:
-                self.timer = time.time()
-                self.start_timer = False
-            self.elapsed_time = time.time() - self.timer
+            # if self.start_timer:
+            #     self.timer = time.time()
+            #     self.start_timer = False
+            # self.elapsed_time = time.time() - self.timer
         
         if self.start_shuffle:
             self.shuffle()
@@ -167,6 +157,7 @@ class Game:
             self.draw_tiles()
         
         self.all_sprites.update()
+        self.draw()
     
     def draw_grid(self):
         for row in range(-1, gameSize * tileSize, tileSize):
@@ -184,7 +175,6 @@ class Game:
             button.draw(self.screen)
         
         UIElement(825, 35, "%.3f" % self.elapsed_time).draw(self.screen)
-        UIElement(710, 550, "High Score = %.3f" %(self.high_score if self.high_score > 0 else 0)).draw(self.screen)
         pygame.display.flip()
         
     
@@ -197,21 +187,18 @@ class Game:
 
         # Push the initial state onto the priority queue
         heapq.heappush(priority_Queue, (func(self.tiles_grid, gameSize), self.tiles_grid))
-
+        
         while priority_Queue:
             current_priority, current_state = heapq.heappop(priority_Queue)
-
+            
             self.tiles_grid = current_state
-            pygame.display.flip()  # Ensure the display is updated
-            pygame.time.wait(0)  # Wait for 200 milliseconds (0.20 seconds)
             self.update()
             print(self.tiles_grid)
 
             if current_state == self.tiles_grid_completed:
-                print("Completed")
-                self.start_solving = False
-                self.draw_tiles()
+                # self.start_solving = False
                 self.update()
+                print("Completed")
                 return current_state
 
             Visited.add(tuple(map(tuple, current_state)))
@@ -220,8 +207,6 @@ class Game:
                 if tuple(map(tuple, neighbour)) not in Visited:
                     heapq.heappush(priority_Queue, (func(neighbour, gameSize), neighbour))
                     self.tiles_grid = neighbour  # Apply the move
-                    
-                    
 
         print("No Solution")
         return None
@@ -233,26 +218,39 @@ class Game:
         for i, tiles in enumerate(self.tiles):
             for j, tile in enumerate(tiles):
                 if self.tiles_grid[i][j] == 0:  # Found the empty tile
-                    if tile.up():
+                    
+                    # Move the empty tile up
+                    if i - 1 >= 0:
                         up_list = copy.deepcopy(self.tiles_grid)
                         up_list[i][j], up_list[i-1][j] = up_list[i-1][j], up_list[i][j]
                         neighbours.append(up_list)
-                    if tile.down():
+                    
+                    # Move the empty tile down
+                    if i + 1 < settings.gameSize:
                         down_list = copy.deepcopy(self.tiles_grid)
                         down_list[i][j], down_list[i+1][j] = down_list[i+1][j], down_list[i][j]
                         neighbours.append(down_list)
-                    if tile.right():
+                    
+                    # Move the empty tile right
+                    if j + 1 < settings.gameSize:
                         right_list = copy.deepcopy(self.tiles_grid)
                         right_list[i][j], right_list[i][j+1] = right_list[i][j+1], right_list[i][j]
                         neighbours.append(right_list)
-                    if tile.left():
+                    
+                    # Move the empty tile left
+                    if j - 1 >= 0:
                         left_list = copy.deepcopy(self.tiles_grid)
                         left_list[i][j], left_list[i][j-1] = left_list[i][j-1], left_list[i][j]
                         neighbours.append(left_list)
-                    
+        for neighbour in neighbours:
+            print("Neighbour state:", neighbour)
         return neighbours
 
-
+    def change_board_size(self, new_size):
+        global gameSize
+        gameSize = new_size
+        settings.gameSize = new_size  # Update the settings
+        self.new()  # Reinitialize the game with the new board size
 
 
 
@@ -267,17 +265,21 @@ class Game:
                 for row, tiles in enumerate(self.tiles):
                     for col, tile in enumerate(tiles):
                         if tile.click(mouse_x, mouse_y):
-                            if tile.right() and self.tiles_grid[row][col + 1] == 0:
-                                self.tiles_grid[row][col], self.tiles_grid[row][col + 1] = self.tiles_grid[row][col + 1], self.tiles_grid[row][col]
+                            if tile.right() and col + 1 < settings.gameSize:
+                                if self.tiles_grid[row][col + 1] == 0:
+                                    self.tiles_grid[row][col], self.tiles_grid[row][col + 1] = self.tiles_grid[row][col + 1], self.tiles_grid[row][col]
                                 
-                            if tile.left() and self.tiles_grid[row][col - 1] == 0:
-                                self.tiles_grid[row][col], self.tiles_grid[row][col - 1] = self.tiles_grid[row][col - 1], self.tiles_grid[row][col]
+                            if tile.left() and col - 1 >= 0:
+                                if self.tiles_grid[row][col - 1] == 0:
+                                    self.tiles_grid[row][col], self.tiles_grid[row][col - 1] = self.tiles_grid[row][col - 1], self.tiles_grid[row][col]
                                 
-                            if tile.up() and self.tiles_grid[row - 1][col] == 0:
-                                self.tiles_grid[row][col], self.tiles_grid[row - 1][col] = self.tiles_grid[row - 1][col], self.tiles_grid[row][col]
+                            if tile.up() and row - 1 >= 0:
+                                if self.tiles_grid[row - 1][col] == 0:
+                                    self.tiles_grid[row][col], self.tiles_grid[row - 1][col] = self.tiles_grid[row - 1][col], self.tiles_grid[row][col]
                             
-                            if tile.down() and self.tiles_grid[row + 1][col] == 0:
-                                self.tiles_grid[row][col], self.tiles_grid[row + 1 ][col] = self.tiles_grid[row + 1][col], self.tiles_grid[row][col]
+                            if tile.down() and row + 1 < settings.gameSize:
+                                if self.tiles_grid[row + 1][col] == 0:
+                                    self.tiles_grid[row][col], self.tiles_grid[row + 1 ][col] = self.tiles_grid[row + 1][col], self.tiles_grid[row][col]
                             
                             self.draw_tiles()
                                 
@@ -294,13 +296,12 @@ class Game:
                         if button.text == "2nd Function":
                             self.Best_First_Search(distances)
                         if button.text == "3 x 3" :
-                            settings.gameSize=3
+                            self.change_board_size(3)
                         if button.text == "4 x 4" :
-                            settings.gameSize = 4
-                            self.new()
-                            print("4444")
+                            self.change_board_size(4)
                         if button.text == "5 x 5" :
-                            settings.gameSize = 5 
+                            self.change_board_size(5)
+                            
 
 
 
