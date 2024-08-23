@@ -294,7 +294,11 @@ class Game:
                         if button.text == "1st Function":
                             self.Best_First_Search(misplaced_tiles_function)
                         if button.text == "2nd Function":
+                            self.Best_First_Search(misplaced_tiles_with_constraints)
+                        if button.text == "3rd Function":
                             self.Best_First_Search(distances)
+                        if button.text == "4th Function":
+                            self.Best_First_Search(Linear_distances)
                         if button.text == "3 x 3" :
                             self.change_board_size(3)
                         if button.text == "4 x 4" :
