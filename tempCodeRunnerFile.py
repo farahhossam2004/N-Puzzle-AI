@@ -1,3 +1,1 @@
-if button.text == "Shuffle":
-                            self.shuffle_time = 0
-                            self.start_shuffle = True
+self.start_solving

@@ -7,6 +7,7 @@ from heioristic_Function import *
 import copy
 import heapq
 import settings
+
 class Game:
     
     def __init__(self):
@@ -19,6 +20,7 @@ class Game:
         self.previous_choice = ""
         self.start_game = False     # boolean to check if the game is running 
         self.start_timer = False
+        self.start_time = 0
         self.elapsed_time = 0
         self.start_solving = False
         
@@ -28,9 +30,9 @@ class Game:
     def create_game(self):
         grid = []
         number = 1
-        for x in range(gameSize):
+        for x in range(settings.gameSize):
             grid.append([])
-            for y in range(gameSize):
+            for y in range(settings.gameSize):
                 grid[x].append(number)
                 number += 1
         grid[-1][-1] = 0
@@ -108,6 +110,7 @@ class Game:
         self.elapsed_time = 0
         self.start_timer = False
         self.start_game = False
+        self.start_solving = False
         self.button_list = []
         self.button_list.append(Button(775, 100, 250, 50, "Shuffle", cmawy, Black))
         self.button_list.append(Button(775, 170, 250, 50, "Reset", cmawy, Black))
@@ -138,11 +141,12 @@ class Game:
             
             if self.tiles_grid == self.tiles_grid_completed:
                 self.start_game = False
+                self.start_timer = False
             
-            # if self.start_timer:
+            if self.start_timer:
             #     self.timer = time.time()
             #     self.start_timer = False
-            # self.elapsed_time = time.time() - self.timer
+                self.elapsed_time = time.time() - self.start_time
         
         if self.start_shuffle:
             self.shuffle()
@@ -153,7 +157,9 @@ class Game:
                 
         if self.start_solving:
             self.start_game = True
-            self.start_timer = True
+            if not self.start_timer:
+                self.start_timer = True
+                self.start_time = time.time()
             self.draw_tiles()
         
         self.all_sprites.update()
@@ -264,7 +270,7 @@ class Game:
                 mouse_x, mouse_y = pygame.mouse.get_pos()
                 for row, tiles in enumerate(self.tiles):
                     for col, tile in enumerate(tiles):
-                        if tile.click(mouse_x, mouse_y):
+                        if tile and tile.click(mouse_x, mouse_y):
                             if tile.right() and col + 1 < settings.gameSize:
                                 if self.tiles_grid[row][col + 1] == 0:
                                     self.tiles_grid[row][col], self.tiles_grid[row][col + 1] = self.tiles_grid[row][col + 1], self.tiles_grid[row][col]
@@ -289,6 +295,10 @@ class Game:
                         if button.text == "Shuffle":
                             self.shuffle_time = 0
                             self.start_shuffle = True
+                            self.elapsed_time = 0
+                            self.start_timer = False
+                            self.start_game = False
+                            self.start_solving = False
                         if button.text == "Reset":
                             self.new()
                         if button.text == "1st Function":
