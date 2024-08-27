@@ -7,6 +7,8 @@ Red = (228,28,28)
 Green = (139,202,67)
 cmawy = (56,219,203)
 BGColor = Black
+dark_red = (120,14,14)
+dark_green = (12, 40, 80)
 
 # game settings
 width = 1110

@@ -112,15 +112,15 @@ class Game:
         self.start_game = False
         self.start_solving = False
         self.button_list = []
-        self.button_list.append(Button(775, 100, 250, 50, "Shuffle", cmawy, Black))
-        self.button_list.append(Button(775, 170, 250, 50, "Reset", cmawy, Black))
-        self.button_list.append(Button(775, 240, 250, 50, "1st Function",Red, White))
-        self.button_list.append(Button(775, 310, 250, 50, "2nd Function",Green, White))
-        self.button_list.append(Button(775, 380, 250, 50, "3rd Function",LightGrey, White))
-        self.button_list.append(Button(775, 450, 250, 50, "4th Function",brown, White))
-        self.button_list.append(Button(630, 100,120, 50, "3 x 3",Green, White))
-        self.button_list.append(Button(630, 170, 120, 50, "4 x 4",LightGrey, White))
-        self.button_list.append(Button(630, 240, 120, 50, "5 x 5",brown, White))
+        self.button_list.append(Button(775, 100, 250, 50, "Shuffle", White, dark_red))
+        self.button_list.append(Button(775, 170, 250, 50, "Reset", White, dark_red))
+        self.button_list.append(Button(775, 240, 250, 50, "1st Function",White, dark_red))
+        self.button_list.append(Button(775, 310, 250, 50, "2nd Function",White, dark_red))
+        self.button_list.append(Button(775, 380, 250, 50, "3rd Function",White, dark_red))
+        self.button_list.append(Button(775, 450, 250, 50, "4th Function",White, dark_red))
+        self.button_list.append(Button(630, 100,120, 50, "3 x 3",dark_green, White))
+        self.button_list.append(Button(630, 170, 120, 50, "4 x 4",dark_green, White))
+        self.button_list.append(Button(630, 240, 120, 50, "5 x 5",dark_green, White))
         
         self.draw_tiles()
         
@@ -167,9 +167,9 @@ class Game:
     
     def draw_grid(self):
         for row in range(-1, gameSize * tileSize, tileSize):
-            pygame.draw.line(self.screen, LightGrey, (row, 0), (row, gameSize * tileSize) )
+            pygame.draw.line(self.screen, White, (row, 0), (row, gameSize * tileSize), 5 )
         for column in range(-1, gameSize * tileSize, tileSize):
-            pygame.draw.line(self.screen, LightGrey, (0, column), (gameSize * tileSize, column) )
+            pygame.draw.line(self.screen, White, (0, column), (gameSize * tileSize, column), 5 )
             
             
     
